@@ -9,6 +9,7 @@ type Ticket = {
   customerName: string;
   status: 'Open' | 'Pending' | 'Resolved';
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  category: 'Billing' | 'Bug' | 'Database' | 'Feature Request' | 'Security';
   date: string;
 };
 
@@ -20,6 +21,7 @@ const mockTickets: Ticket[] = [
     customerName: "Acme Corp",
     status: "Open",
     priority: "High",
+    category: "Database",
     date: "2026-02-12"
   },
   {
@@ -28,6 +30,7 @@ const mockTickets: Ticket[] = [
     customerName: "TechStart Inc",
     status: "Pending",
     priority: "Urgent",
+    category: "Billing",
     date: "2026-02-11"
   },
   {
@@ -36,6 +39,7 @@ const mockTickets: Ticket[] = [
     customerName: "Digital Agency",
     status: "Open",
     priority: "Low",
+    category: "Feature Request",
     date: "2026-02-10"
   },
   {
@@ -44,6 +48,7 @@ const mockTickets: Ticket[] = [
     customerName: "Global Solutions",
     status: "Resolved",
     priority: "Medium",
+    category: "Bug",
     date: "2026-02-09"
   },
   {
@@ -52,6 +57,7 @@ const mockTickets: Ticket[] = [
     customerName: "Creative Studio",
     status: "Pending",
     priority: "High",
+    category: "Security",
     date: "2026-02-08"
   },
   {
@@ -60,6 +66,7 @@ const mockTickets: Ticket[] = [
     customerName: "CloudFirst",
     status: "Open",
     priority: "Medium",
+    category: "Feature Request",
     date: "2026-02-07"
   },
 ];
@@ -98,6 +105,23 @@ export default function SupportTickets() {
         return "bg-rose-500/20 text-rose-300 border-rose-500/30";
       default:
         return "bg-neutral-500/20 text-neutral-300 border-neutral-500/30";
+    }
+  };
+
+  const getCategoryBadgeColor = (category: string) => {
+    switch (category) {
+      case "Billing":
+        return "border-blue-500/50 text-blue-400";
+      case "Bug":
+        return "border-rose-500/50 text-rose-400";
+      case "Database":
+        return "border-purple-500/50 text-purple-400";
+      case "Feature Request":
+        return "border-emerald-500/50 text-emerald-400";
+      case "Security":
+        return "border-orange-500/50 text-orange-400";
+      default:
+        return "border-neutral-500/50 text-neutral-400";
     }
   };
 
@@ -158,9 +182,14 @@ export default function SupportTickets() {
                     <div className="flex-1">
                       <div className="flex items-start gap-4 mb-3">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold group-hover:text-yellow-400 transition mb-2">
-                            {ticket.subject}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-bold group-hover:text-yellow-400 transition">
+                              {ticket.subject}
+                            </h3>
+                            <span className={`px-2 py-1 border rounded text-xs font-semibold ${getCategoryBadgeColor(ticket.category)}`}>
+                              {ticket.category}
+                            </span>
+                          </div>
                           <p className="text-sm text-neutral-400">
                             {ticket.customerName}
                           </p>

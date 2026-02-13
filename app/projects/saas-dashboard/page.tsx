@@ -94,6 +94,11 @@ export default function SaaSDashboard() {
   const serverLogIdRef = useRef(0);
   const [isExporting, setIsExporting] = useState(false);
 
+  // Dropdown states
+  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState("Last 30 Days");
+  const [isFilterPlanOpen, setIsFilterPlanOpen] = useState(false);
+
   // Live data updates every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -352,13 +357,33 @@ For more details, visit your dashboard.
           </div>
 
           {/* Date Range Picker */}
-          <div className="px-6 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl backdrop-blur-md w-fit">
-            <select defaultValue="Last 30 Days" className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-              <option>Last 90 Days</option>
-              <option>Year to Date</option>
-            </select>
+          <div className={`bg-neutral-900/80 border border-neutral-800 rounded-xl backdrop-blur-md w-fit relative ${isDateRangeOpen ? 'z-50' : ''}`}>
+            <button
+              onClick={() => setIsDateRangeOpen(!isDateRangeOpen)}
+              className="px-6 py-3 text-white font-semibold flex items-center gap-3 hover:bg-neutral-800/50 transition"
+            >
+              <span>{selectedDateRange}</span>
+              <span className={`text-lg transition-transform ${isDateRangeOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            
+            {isDateRangeOpen && (
+              <div className="absolute top-full mt-2 left-0 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl z-[100] min-w-full">
+                {(['Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'Year to Date'] as const).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSelectedDateRange(option);
+                      setIsDateRangeOpen(false);
+                    }}
+                    className={`w-full px-6 py-3 text-left font-semibold transition border-b border-neutral-700 last:border-b-0 ${
+                      selectedDateRange === option ? 'bg-neutral-700 text-yellow-400' : 'text-neutral-100 hover:bg-neutral-700/60'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -598,17 +623,33 @@ For more details, visit your dashboard.
             />
 
             {/* Filter Dropdown */}
-            <div className="px-4 py-2 bg-neutral-900/80 border border-neutral-800 rounded-lg backdrop-blur-md">
-              <select
-                value={filterPlan}
-                onChange={(e) => setFilterPlan(e.target.value as any)}
-                className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+            <div className={`relative ${isFilterPlanOpen ? 'z-50' : ''}`}>
+              <button
+                onClick={() => setIsFilterPlanOpen(!isFilterPlanOpen)}
+                className="px-4 py-2 bg-neutral-900/80 border border-neutral-800 rounded-lg text-white font-semibold hover:bg-neutral-800/60 transition flex items-center gap-2 cursor-pointer"
               >
-                <option value="All">All Plans</option>
-                <option value="Starter">Starter</option>
-                <option value="Pro">Pro</option>
-                <option value="Enterprise">Enterprise</option>
-              </select>
+                <span>{filterPlan}</span>
+                <span className={`text-sm transition-transform ${isFilterPlanOpen ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+              
+              {isFilterPlanOpen && (
+                <div className="absolute top-full mt-2 left-0 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl z-[100] min-w-max">
+                  {(['All', 'Starter', 'Pro', 'Enterprise'] as const).map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setFilterPlan(option);
+                        setIsFilterPlanOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left font-semibold transition border-b border-neutral-700 last:border-b-0 ${
+                        filterPlan === option ? 'bg-neutral-700 text-yellow-400' : 'text-neutral-100 hover:bg-neutral-700/60'
+                      }`}
+                    >
+                      {option} Plans
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

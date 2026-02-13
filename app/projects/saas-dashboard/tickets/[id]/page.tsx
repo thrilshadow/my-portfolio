@@ -12,12 +12,21 @@ type Message = {
   timestamp: string;
 };
 
+type ActivityLog = {
+  id: number;
+  type: 'Status Change' | 'Assigned' | 'Comment';
+  description: string;
+  timestamp: string;
+  actor: string;
+};
+
 type Ticket = {
   id: number;
   subject: string;
   customerName: string;
   status: 'Open' | 'Pending' | 'Resolved';
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  category: 'Billing' | 'Bug' | 'Database' | 'Feature Request' | 'Security';
   date: string;
   description?: string;
   assignedTo?: string;
@@ -33,6 +42,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "Acme Corp",
     status: "Open",
     priority: "High",
+    category: "Database",
     date: "2026-02-12",
     description: "When loading datasets with over 100,000 records, the dashboard takes 15-20 seconds to render. This is impacting user experience and productivity.",
     assignedTo: "Sarah Johnson",
@@ -74,6 +84,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "TechStart Inc",
     status: "Pending",
     priority: "Urgent",
+    category: "Bug",
     date: "2026-02-11",
     description: "Stripe webhook integration has stopped processing payments. Last successful transaction was on Feb 10. Users are unable to complete purchases.",
     assignedTo: "Michael Chen",
@@ -115,6 +126,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "Digital Agency",
     status: "Open",
     priority: "Low",
+    category: "Feature Request",
     date: "2026-02-10",
     description: "Feature request from customer to add a dark mode toggle in user settings. This would improve accessibility for evening work sessions.",
     assignedTo: "Emma Williams",
@@ -142,6 +154,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "Global Solutions",
     status: "Resolved",
     priority: "Medium",
+    category: "Billing",
     date: "2026-02-09",
     description: "Export to CSV button was not including all columns. Fixed by updating the export mapping logic.",
     assignedTo: "Alex Rivera",
@@ -176,6 +189,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "Creative Studio",
     status: "Pending",
     priority: "High",
+    category: "Security",
     date: "2026-02-08",
     description: "Customers hitting 429 errors when making bulk API calls. Current rate limit of 100 req/min may be too restrictive for their workflow.",
     assignedTo: "James Park",
@@ -203,6 +217,7 @@ const mockTickets: Record<number, Ticket> = {
     customerName: "CloudFirst",
     status: "Open",
     priority: "Medium",
+    category: "Feature Request",
     date: "2026-02-07",
     description: "Customer needs detailed documentation on setting up webhooks for their integration. Current docs are missing implementation examples.",
     assignedTo: "Lisa Anderson",
@@ -234,6 +249,12 @@ export default function TicketDetail() {
   const [messages, setMessages] = useState<Message[]>(ticket?.messages || []);
   const [replyText, setReplyText] = useState("");
   const [status, setStatus] = useState<'Open' | 'Pending' | 'Resolved'>(ticket?.status || 'Open');
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>([
+    { id: 3, type: 'Assigned', description: 'Assigned to Sarah Johnson', timestamp: '2026-02-12 08:30', actor: 'Support Manager' },
+    { id: 2, type: 'Status Change', description: 'Status changed from Pending to Open', timestamp: '2026-02-12 08:15', actor: 'Support Manager' },
+    { id: 1, type: 'Comment', description: 'Ticket created and initial assessment completed', timestamp: '2026-02-12 07:45', actor: 'System' }
+  ]);
 
   if (!ticket) {
     return (
@@ -290,6 +311,32 @@ export default function TicketDetail() {
         return "bg-rose-500/20 border-rose-500/30 text-rose-300";
       default:
         return "bg-neutral-500/20 border-neutral-500/30 text-neutral-300";
+    }
+  };
+
+  const getCategoryBadgeColor = (category: string) => {
+    switch (category) {
+      case "Billing":
+        return "border-blue-500/50 text-blue-400";
+      case "Bug":
+        return "border-rose-500/50 text-rose-400";
+      case "Database":
+        return "border-purple-500/50 text-purple-400";
+      case "Feature Request":
+        return "border-emerald-500/50 text-emerald-400";
+      case "Security":
+        return "border-orange-500/50 text-orange-400";
+      default:
+        return "border-neutral-500/50 text-neutral-400";
+    }
+  };
+
+  const getActivityIconColor = (type: string) => {
+    switch (type) {
+      case "Status Change":
+        return "bg-yellow-500/20 border-yellow-500/30";
+      default:
+        return "bg-neutral-700/40 border-neutral-700/60";
     }
   };
 
@@ -351,26 +398,65 @@ export default function TicketDetail() {
           {/* Right Column - Metadata Sidebar */}
           <div className="space-y-4">
             {/* Status Control */}
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md">
+            <div className={`bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md relative ${isStatusDropdownOpen ? 'z-50' : ''}`}>
               <p className="text-sm text-neutral-400 mb-3 uppercase tracking-widest font-semibold">Status</p>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'Open' | 'Pending' | 'Resolved')}
-                className={`w-full px-4 py-3 rounded-lg border font-semibold cursor-pointer ${
-                  getStatusBadgeColor(status)
-                } bg-transparent focus:outline-none transition`}
-              >
-                <option value="Open">Open</option>
-                <option value="Pending">Pending</option>
-                <option value="Resolved">Resolved</option>
-              </select>
+              <div className="relative">
+                <button
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className={`w-full px-4 py-3 rounded-lg border font-semibold text-left flex items-center justify-between transition ${
+                    getStatusBadgeColor(status)
+                  } bg-neutral-800/50 hover:bg-neutral-800 border-neutral-700`}
+                >
+                  <span>{status}</span>
+                  <span className={`text-lg transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                
+                {isStatusDropdownOpen && (
+                  <div className="absolute top-full mt-2 w-full bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg z-[100]">
+                    {(['Open', 'Pending', 'Resolved'] as const).map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          if (option !== status) {
+                            const now = new Date();
+                            const timestamp = `${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                            const newActivity: ActivityLog = {
+                              id: Math.max(...activityLog.map(a => a.id), 0) + 1,
+                              type: 'Status Change',
+                              description: `Status changed from ${status} to ${option}`,
+                              timestamp,
+                              actor: 'You (Support Agent)'
+                            };
+                            setActivityLog([newActivity, ...activityLog]);
+                          }
+                          setStatus(option);
+                          setIsStatusDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left font-semibold transition border-b border-neutral-700 last:border-b-0 ${
+                          status === option ? 'bg-neutral-700 text-yellow-400' : 'text-neutral-100 hover:bg-neutral-700/60'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Priority */}
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md">
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md relative">
               <p className="text-sm text-neutral-400 mb-3 uppercase tracking-widest font-semibold">Priority</p>
               <div className={`px-4 py-3 rounded-lg border text-center font-semibold ${getPriorityBadgeColor(ticket.priority)}`}>
                 {ticket.priority}
+              </div>
+            </div>
+
+            {/* Category */}
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md relative">
+              <p className="text-sm text-neutral-400 mb-3 uppercase tracking-widest font-semibold">Category</p>
+              <div className={`px-4 py-3 rounded-lg border text-center font-semibold ${getCategoryBadgeColor(ticket.category)}`}>
+                {ticket.category}
               </div>
             </div>
 
@@ -409,6 +495,45 @@ export default function TicketDetail() {
               <p className="text-3xl font-black text-yellow-400 mb-1">{messages.length}</p>
               <p className="text-sm text-neutral-400">messages in thread</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ticket Activity Timeline */}
+      <section className="px-6 max-w-7xl mx-auto mb-20">
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-8 backdrop-blur-md">
+          <h2 className="text-2xl font-bold mb-8 text-white">Ticket Activity</h2>
+          
+          <div className="space-y-6">
+            {activityLog.map((activity, index) => (
+              <div key={activity.id} className="flex gap-6">
+                {/* Timeline line and icon */}
+                <div className="flex flex-col items-center">
+                  {/* Icon circle */}
+                  <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${getActivityIconColor(activity.type)} ${activity.type === 'Status Change' ? 'border-yellow-500' : 'border-neutral-700'}`}>
+                    {activity.type === 'Status Change' && <span className="text-yellow-400 text-lg">✓</span>}
+                    {activity.type === 'Assigned' && <span className="text-neutral-300 text-lg">👤</span>}
+                    {activity.type === 'Comment' && <span className="text-neutral-300 text-lg">💬</span>}
+                  </div>
+                  
+                  {/* Vertical line to next item */}
+                  {index !== activityLog.length - 1 && (
+                    <div className="w-0.5 h-12 bg-neutral-800 my-2" />
+                  )}
+                </div>
+                
+                {/* Activity details */}
+                <div className="flex-1 pt-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-semibold text-white">{activity.description}</p>
+                      <p className="text-xs text-neutral-400 mt-1">{activity.actor}</p>
+                    </div>
+                    <p className="text-xs text-neutral-500 whitespace-nowrap ml-4">{activity.timestamp}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
