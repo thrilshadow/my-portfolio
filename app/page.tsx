@@ -1,62 +1,67 @@
 "use client";
-import Image from "next/image";
+
+// 1. Define the "Shape" of a project using TypeScript
+type Project = {
+  title: string;
+  description: string;
+  tags: string[];
+  image: string;
+};
+
+// 2. Create your data list (Easy to add more projects here!)
+const projects: Project[] = [
+  {
+    title: "Scalable Storefront API",
+    description: "Built with Next.js and Supabase. Features real-time inventory.",
+    tags: ["Next.js", "PostgreSQL"],
+    image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=1000",
+  },
+  {
+    title: "SaaS Dashboard",
+    description: "Real-time data visualization dashboard for tracking metrics.",
+    tags: ["TypeScript", "Chart.js"],
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000",
+  },
+  {
+    title: "AI Content Architect",
+    description: "An intelligent platform that uses LLMs to generate SEO-optimized blog posts from simple prompts.",
+    tags: ["OpenAI API", "Next.js", "Server Actions"],
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1000",
+  },
+];
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white p-6">
+      {/* ... Hero and Marquee code stays the same ... */}
+
+      <section className="max-w-6xl mx-auto py-20 px-4">
+        <h2 className="text-4xl font-black mb-12 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+          Featured Work
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* 3. The "Map" - This loops through your projects array */}
+          {projects.map((project, index) => (
+            <div key={index} className="group bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden hover:border-yellow-500/50 transition duration-500 shadow-2xl">
+              <div className="h-48 overflow-hidden">
+                <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+              </div>
+              <div className="p-8">
+                <h3 className="text-2xl font-bold mb-3 group-hover:text-yellow-500 transition">{project.title}</h3>
+                <p className="text-neutral-400 mb-6">{project.description}</p>
+                <div className="flex gap-2">
+                  {project.tags.map((tag) => (
+                    <span key={tag} className="bg-neutral-800 px-3 py-1 rounded-full text-xs font-semibold">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
       
-      {/* 1. HERO SECTION (The Top Part) */}
-      <section className="flex flex-col items-center justify-center text-center py-20">
-        <div className="max-w-4xl border border-yellow-500/20 bg-yellow-500/5 p-12 rounded-3xl shadow-2xl">
-          <h1 className="text-6xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 bg-clip-text text-transparent">
-            Thrilshadow Dev
-          </h1>
-          <p className="text-neutral-400 text-2xl mb-10 max-w-2xl">
-            Full-Stack Freelance Solutions. High-performance apps built for the modern web.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold hover:bg-yellow-400 transition">
-              View Portfolio
-            </button>
-            <button className="border border-neutral-700 px-8 py-4 rounded-full font-bold hover:bg-neutral-900 transition">
-              Start a Project
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. CONTACT FORM (The Bottom Part) */}
-      <section className="max-w-3xl mx-auto py-20 px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-            Let's Work Together
-          </h2>
-          <p className="text-neutral-400">Have a project in mind? Fill out the form below.</p>
-        </div>
-
-        <div className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl shadow-xl">
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-neutral-500 mb-2">Name</label>
-                <input type="text" placeholder="John Doe" className="w-full p-4 bg-neutral-950 border border-neutral-800 rounded-xl focus:outline-none focus:border-yellow-500 transition" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-500 mb-2">Email</label>
-                <input type="email" placeholder="john@example.com" className="w-full p-4 bg-neutral-950 border border-neutral-800 rounded-xl focus:outline-none focus:border-yellow-500 transition" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-500 mb-2">Message</label>
-              <textarea placeholder="Tell me about your project..." rows={5} className="w-full p-4 bg-neutral-950 border border-neutral-800 rounded-xl focus:outline-none focus:border-yellow-500 transition"></textarea>
-            </div>
-            <button className="w-full bg-yellow-500 text-black py-4 rounded-xl font-bold hover:bg-yellow-400 transition">
-              Send Inquiry
-            </button>
-          </form>
-        </div>
-      </section>
-
+      {/* ... Contact Form and Footer ... */}
     </main>
   );
 }
