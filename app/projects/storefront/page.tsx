@@ -11,6 +11,13 @@ type Product = {
   description: string;
   category: string;
   image: string;
+  stock: number;
+};
+
+type Toast = {
+  id: number;
+  message: string;
+  type: 'purchase' | 'low-stock';
 };
 
 type CartItem = Product & { quantity: number };
@@ -24,6 +31,7 @@ const mockProducts: Product[] = [
     description: "High-fidelity audio with active noise cancellation and 30-hour battery life.",
     category: "Electronics",
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=500",
+    stock: 12,
   },
   {
     id: 2,
@@ -32,6 +40,7 @@ const mockProducts: Product[] = [
     description: "Advanced health tracking, GPS navigation, and seamless smartphone integration.",
     category: "Wearables",
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=500",
+    stock: 8,
   },
   {
     id: 3,
@@ -40,6 +49,7 @@ const mockProducts: Product[] = [
     description: "Crystal-clear 4K video with auto-focus and built-in studio microphone.",
     category: "Electronics",
     image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=500",
+    stock: 15,
   },
   {
     id: 4,
@@ -48,6 +58,7 @@ const mockProducts: Product[] = [
     description: "Ultra-fast data transfer speeds and rugged design for on-the-go professionals.",
     category: "Storage",
     image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&q=80&w=500",
+    stock: 20,
   },
   {
     id: 5,
@@ -56,6 +67,7 @@ const mockProducts: Product[] = [
     description: "7-in-1 multiport hub with HDMI, USB 3.0, and SD card reader.",
     category: "Accessories",
     image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?auto=format&fit=crop&q=80&w=500",
+    stock: 28,
   },
   {
     id: 6,
@@ -64,6 +76,7 @@ const mockProducts: Product[] = [
     description: "Premium mechanical switches with customizable RGB lighting and wireless connectivity.",
     category: "Peripherals",
     image: "https://images.unsplash.com/photo-1587829191301-2a01e5f060b6?auto=format&fit=crop&q=80&w=500",
+    stock: 18,
   },
 ];
 
@@ -71,6 +84,53 @@ export default function StorefrontDemo() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastIdRef = React.useRef(0);
+
+  // Live inventory simulator - randomly decreases stock every 30 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setProducts((prevProducts) => {
+        const randomIndex = Math.floor(Math.random() * prevProducts.length);
+        const randomProduct = prevProducts[randomIndex];
+        
+        // Only decrease stock if it's > 0
+        if (randomProduct.stock > 0) {
+          const newProducts = [...prevProducts];
+          newProducts[randomIndex] = {
+            ...randomProduct,
+            stock: Math.max(0, randomProduct.stock - Math.floor(Math.random() * 3) + 1), // Decrease 1-2 items
+          };
+
+          // Show purchase toast
+          addToast(`Someone just purchased ${randomProduct.name} 🎉`, 'purchase');
+
+          // Show low stock warning if needed
+          if (newProducts[randomIndex].stock < 5 && newProducts[randomIndex].stock > 0) {
+            addToast(`⚠️ Low Stock: Only ${newProducts[randomIndex].stock} left of ${randomProduct.name}`, 'low-stock');
+          }
+
+          return newProducts;
+        }
+        return prevProducts;
+      });
+    }, 30000); // Update every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Toast management
+  const addToast = (message: string, type: 'purchase' | 'low-stock') => {
+    const id = toastIdRef.current;
+    toastIdRef.current += 1;
+    setToasts((prev) => [...prev, { id, message, type }]);
+
+    // Auto-remove toast after 4 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 4000);
+  };
 
   // Add to cart function
   const addToCart = (product: Product) => {
@@ -113,13 +173,29 @@ export default function StorefrontDemo() {
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Filter products based on search
-  const filteredProducts = mockProducts.filter((product) =>
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
+      {/* Toast Notifications */}
+      <div className="fixed top-20 right-6 z-40 space-y-3 max-w-sm">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`px-6 py-4 rounded-lg border backdrop-blur-sm animation-fade-in ${
+              toast.type === 'purchase'
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100'
+                : 'bg-red-500/20 border-red-500/50 text-red-100'
+            }`}
+          >
+            {toast.message}
+          </div>
+        ))}
+      </div>
+
       {/* Back Button & Header */}
       <header className="pt-20 px-6 max-w-7xl mx-auto mb-12">
         <Link href="/scalable-storefront-api" className="text-yellow-500 hover:text-yellow-400 transition font-semibold flex items-center gap-2 mb-8">
@@ -186,6 +262,13 @@ export default function StorefrontDemo() {
                     {product.description}
                   </p>
 
+                  {/* Low Stock Badge */}
+                  {product.stock < 5 && (
+                    <div className="mb-3 px-3 py-1 bg-red-500/20 border border-red-500/50 rounded-lg w-fit">
+                      <span className="text-red-500 text-xs font-bold">⚠️ Low Stock: {product.stock} left</span>
+                    </div>
+                  )}
+
                   {/* Price and Button */}
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-yellow-500">
@@ -196,9 +279,14 @@ export default function StorefrontDemo() {
                         e.preventDefault();
                         addToCart(product);
                       }}
-                      className="px-4 py-2 bg-yellow-500 text-black rounded-lg font-semibold hover:bg-yellow-400 transition active:scale-95"
+                      disabled={product.stock === 0}
+                      className={`px-4 py-2 rounded-lg font-semibold transition active:scale-95 ${
+                        product.stock === 0
+                          ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed'
+                          : 'bg-yellow-500 text-black hover:bg-yellow-400'
+                      }`}
                     >
-                      Add
+                      {product.stock === 0 ? 'Out' : 'Add'}
                     </button>
                   </div>
                 </div>

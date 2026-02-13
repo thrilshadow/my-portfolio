@@ -25,6 +25,7 @@ const projects: Project[] = [
     description: "Real-time data visualization dashboard for tracking metrics.",
     tags: ["TypeScript", "Chart.js"],
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000",
+    href: "/projects/saas-dashboard",
   },
   {
     title: "AI Content Architect",
