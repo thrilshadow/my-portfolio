@@ -70,16 +70,20 @@ export default function DemoSite() {
           </div>
           
           <div className="h-40 w-full relative">
-            <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-              <path
-                d="M0 35 Q 15 5, 30 25 T 50 15 T 70 30 T 100 10"
-                fill="none"
-                stroke={isDark ? "#EAB308" : "#0F172A"} 
-                strokeWidth="2"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
+           <svg 
+  viewBox="0 0 100 40" 
+  className="w-full h-full overflow-visible" 
+  preserveAspectRatio="none"
+>
+  <path
+    d="M0 30 Q 20 5, 40 20 T 70 10 T 100 25" /* Adjusted path to stay within 100 width */
+    fill="none"
+    stroke={isDark ? "#EAB308" : "#0F172A"} 
+    strokeWidth="3"
+    strokeLinecap="round"
+    vectorEffect="non-scaling-stroke"
+  />
+</svg>
             <div className="flex justify-between mt-4 text-[10px] text-slate-400 font-mono">
               <span>MON</span>
               <span>WED</span>

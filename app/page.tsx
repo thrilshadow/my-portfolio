@@ -1,11 +1,14 @@
 "use client";
 
+import Link from 'next/link';
+
 // 1. Define the "Shape" of a project using TypeScript
 type Project = {
   title: string;
   description: string;
   tags: string[];
   image: string;
+  href?: string;
 };
 
 // 2. Create your data list (Easy to add more projects here!)
@@ -15,6 +18,7 @@ const projects: Project[] = [
     description: "Built with Next.js and Supabase. Features real-time inventory.",
     tags: ["Next.js", "PostgreSQL"],
     image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=1000",
+    href: "/scalable-storefront-api",
   },
   {
     title: "SaaS Dashboard",
@@ -42,22 +46,34 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* 3. The "Map" - This loops through your projects array */}
-          {projects.map((project, index) => (
-            <div key={index} className="group bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden hover:border-yellow-500/50 transition duration-500 shadow-2xl">
-              <div className="h-48 overflow-hidden">
-                <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
-              </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold mb-3 group-hover:text-yellow-500 transition">{project.title}</h3>
-                <p className="text-neutral-400 mb-6">{project.description}</p>
-                <div className="flex gap-2">
-                  {project.tags.map((tag) => (
-                    <span key={tag} className="bg-neutral-800 px-3 py-1 rounded-full text-xs font-semibold">{tag}</span>
-                  ))}
+          {projects.map((project, index) => {
+            const CardContent = (
+              <div className="group bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden hover:border-yellow-500/50 transition duration-500 shadow-2xl h-full flex flex-col">
+                <div className="h-48 overflow-hidden">
+                  <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                </div>
+                <div className="p-8 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold mb-3 group-hover:text-yellow-500 transition">{project.title}</h3>
+                  <p className="text-neutral-400 mb-6 flex-1">{project.description}</p>
+                  <div className="flex gap-2">
+                    {project.tags.map((tag) => (
+                      <span key={tag} className="bg-neutral-800 px-3 py-1 rounded-full text-xs font-semibold">{tag}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+
+            return project.href ? (
+              <Link key={index} href={project.href}>
+                {CardContent}
+              </Link>
+            ) : (
+              <div key={index}>
+                {CardContent}
+              </div>
+            );
+          })}
         </div>
       </section>
       
