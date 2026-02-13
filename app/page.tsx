@@ -61,5 +61,17 @@ export default function Home() {
         </div>
       </main>
     </div>
+    <section className="max-w-3xl mx-auto py-20 px-4">
+  <h2 className="text-3xl font-bold mb-8 text-center text-blue-400">Get in Touch</h2>
+  <form className="space-y-4">
+    <input type="text" placeholder="Name" className="w-full p-4 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-blue-500" />
+    <input type="email" placeholder="Email" className="w-full p-4 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-blue-500" />
+    <textarea placeholder="Your Message" rows={5} className="w-full p-4 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+    <button className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 py-4 rounded-lg font-bold hover:opacity-90 transition">
+      Send Message
+    </button>
+  </form>
+</section>
+
   );
 }
