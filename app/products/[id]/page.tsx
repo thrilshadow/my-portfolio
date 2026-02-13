@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useCart } from '@/app/context/CartContext';
 
 // Product Type Definition
 type Product = {
   id: number;
   name: string;
   price: number;
+  originalPrice?: number;
   description: string;
   category: string;
   image: string;
@@ -19,7 +21,8 @@ const mockProducts: Product[] = [
   {
     id: 1,
     name: "Premium Wireless Headphones",
-    price: 299.99,
+    price: 199.99,
+    originalPrice: 299.99,
     description: "High-fidelity audio with active noise cancellation and 30-hour battery life.",
     category: "Electronics",
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=500",
@@ -27,7 +30,8 @@ const mockProducts: Product[] = [
   {
     id: 2,
     name: "Smart Watch Pro",
-    price: 399.99,
+    price: 299.99,
+    originalPrice: 399.99,
     description: "Advanced health tracking, GPS navigation, and seamless smartphone integration.",
     category: "Wearables",
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=500",
@@ -36,6 +40,7 @@ const mockProducts: Product[] = [
     id: 3,
     name: "4K Webcam",
     price: 199.99,
+    originalPrice: 249.99,
     description: "Crystal-clear 4K video with auto-focus and built-in studio microphone.",
     category: "Electronics",
     image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=500",
@@ -43,7 +48,8 @@ const mockProducts: Product[] = [
   {
     id: 4,
     name: "Portable SSD 2TB",
-    price: 249.99,
+    price: 179.99,
+    originalPrice: 249.99,
     description: "Ultra-fast data transfer speeds and rugged design for on-the-go professionals.",
     category: "Storage",
     image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&q=80&w=500",
@@ -51,7 +57,8 @@ const mockProducts: Product[] = [
   {
     id: 5,
     name: "USB-C Hub Pro",
-    price: 89.99,
+    price: 69.99,
+    originalPrice: 89.99,
     description: "7-in-1 multiport hub with HDMI, USB 3.0, and SD card reader.",
     category: "Accessories",
     image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?auto=format&fit=crop&q=80&w=500",
@@ -59,7 +66,8 @@ const mockProducts: Product[] = [
   {
     id: 6,
     name: "Mechanical Keyboard RGB",
-    price: 149.99,
+    price: 119.99,
+    originalPrice: 149.99,
     description: "Premium mechanical switches with customizable RGB lighting and wireless connectivity.",
     category: "Peripherals",
     image: "https://images.unsplash.com/photo-1587829191301-2a01e5f060b6?auto=format&fit=crop&q=80&w=500",
@@ -267,9 +275,11 @@ export default function ProductDetail() {
   const productId = parseInt(params.id as string);
   const product = mockProducts.find((p) => p.id === productId);
   const details = product ? productDetails[product.id] : null;
+  const { addToCart, cart, removeFromCart, updateQuantity, cartItemCount } = useCart();
 
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [showCart, setShowCart] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [reviewerName, setReviewerName] = useState("");
@@ -290,8 +300,11 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
+    if (product) {
+      addToCart(product);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+    }
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -307,7 +320,119 @@ export default function ProductDetail() {
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
-      {/* Back Button */}
+      {/* Floating Cart Button */}
+      <button
+        onClick={() => setShowCart(true)}
+        className="fixed bottom-8 right-8 z-40 flex items-center justify-center w-16 h-16 bg-yellow-500 text-black rounded-full font-bold hover:bg-yellow-400 transition shadow-lg hover:shadow-xl"
+      >
+        <span className="relative flex items-center justify-center gap-1">
+          🛒
+          {cartItemCount > 0 && (
+            <span className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
+              {cartItemCount}
+            </span>
+          )}
+        </span>
+      </button>
+
+      {/* Shopping Cart Drawer */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
+          <div className="bg-neutral-900 border border-neutral-800 w-full md:w-[500px] h-screen md:h-[80vh] md:rounded-2xl flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-neutral-800">
+              <h2 className="text-2xl font-bold">Shopping Cart</h2>
+              <button
+                onClick={() => setShowCart(false)}
+                className="text-neutral-400 hover:text-white text-2xl transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Cart Items */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {cart.length === 0 ? (
+                <div className="text-center py-12 text-neutral-400">
+                  <p className="text-lg">Your cart is empty</p>
+                  <p className="text-sm mt-2">Add some products to get started!</p>
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-neutral-800 p-6 rounded-xl border border-neutral-700"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-bold text-base">{item.name}</h4>
+                        <p className="text-yellow-500 font-semibold text-base mt-2">
+                          ${item.price.toFixed(2)} each
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 hover:text-red-400 transition text-sm font-bold"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 rounded text-base transition"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateQuantity(item.id, parseInt(e.target.value) || 1)
+                        }
+                        className="w-14 px-3 py-2 bg-neutral-700 rounded text-center text-base"
+                      />
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 rounded text-base transition"
+                      >
+                        +
+                      </button>
+                      <span className="ml-auto text-yellow-500 font-bold text-base">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Cart Summary */}
+            {cart.length > 0 && (
+              <div className="border-t border-neutral-800 p-6 space-y-3">
+                <div className="flex justify-between text-neutral-400 text-sm">
+                  <span>Subtotal:</span>
+                  <span>${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-neutral-400 text-sm">
+                  <span>Tax (8%):</span>
+                  <span>${(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 0.08).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold border-t border-neutral-800 pt-3">
+                  <span>Total:</span>
+                  <span className="text-yellow-500">${(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 1.08).toFixed(2)}</span>
+                </div>
+                <button className="w-full mt-4 px-6 py-3 bg-yellow-500 text-black rounded-xl font-bold hover:bg-yellow-400 transition active:scale-95">
+                  Proceed to Checkout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <header className="pt-20 px-6 max-w-7xl mx-auto mb-12">
         <Link href="/projects/storefront" className="text-yellow-500 hover:text-yellow-400 transition font-semibold flex items-center gap-2 mb-8">
           <span>←</span> Back to Storefront
@@ -358,11 +483,23 @@ export default function ProductDetail() {
               </p>
 
               {/* Price and Stock */}
-              <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl mb-8">
+              <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl mb-8 relative">
+                {product.originalPrice && (
+                  <div className="absolute top-4 right-4 bg-orange-500 text-black px-4 py-2 rounded-full font-bold text-sm">
+                    -{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
+                  </div>
+                )}
                 <p className="text-neutral-400 text-sm mb-2">Price</p>
-                <h2 className="text-5xl font-black text-yellow-500 mb-4">
-                  ${product.price.toFixed(2)}
-                </h2>
+                <div className="flex flex-col mb-4">
+                  {product.originalPrice && (
+                    <span className="text-2xl text-neutral-500 line-through mb-1">
+                      ${product.originalPrice.toFixed(2)}
+                    </span>
+                  )}
+                  <h2 className="text-5xl font-black text-yellow-500">
+                    ${product.price.toFixed(2)}
+                  </h2>
+                </div>
                 <p className={`font-semibold ${details.inStock ? "text-emerald-500" : "text-red-500"}`}>
                   {details.inStock ? "✓ In Stock" : "Out of Stock"}
                 </p>
