@@ -63,18 +63,18 @@ const subscriptionHistory: Record<number, Subscription[]> = {
 };
 
 // User Growth Data
-const userGrowthData = [
-  { week: "Week 1", users: 240 },
-  { week: "Week 2", users: 385 },
-  { week: "Week 3", users: 520 },
-  { week: "Week 4", users: 680 },
-  { week: "Week 5", users: 850 },
-  { week: "Week 6", users: 1020 },
-  { week: "Week 7", users: 1204 },
-  { week: "Week 8", users: 1350 },
+const growthData = [
+  { week: "Week 1", userCount: 200 },
+  { week: "Week 2", userCount: 850 },
+  { week: "Week 3", userCount: 400 },
+  { week: "Week 4", userCount: 1200 },
+  { week: "Week 5", userCount: 600 },
+  { week: "Week 6", userCount: 950 },
+  { week: "Week 7", userCount: 1350 },
+  { week: "Week 8", userCount: 1100 },
 ];
 
-const maxUsers = Math.max(...userGrowthData.map((d) => d.users));
+const maxUserCount = Math.max(...growthData.map(d => d.userCount));
 
 export default function SaaSDashboard() {
   const [filterPlan, setFilterPlan] = useState<'All' | 'Starter' | 'Pro' | 'Enterprise'>('All');
@@ -277,24 +277,28 @@ export default function SaaSDashboard() {
             </span>
           </div>
 
-          {/* Animated SVG Chart */}
-          <div className="h-64 w-full flex items-end justify-between gap-2 px-4">
-            {userGrowthData.map((data, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                <div
-                  className={`w-full bg-gradient-to-t from-yellow-500 to-orange-500 rounded-t-lg transition-all hover:opacity-80 cursor-pointer ${
-                    chartAnimated ? 'animate-grow' : 'h-0'
-                  }`}
-                  style={{
-                    height: chartAnimated ? `${(data.users / maxUsers) * 100}%` : '0',
-                    minHeight: '4px',
-                    animation: chartAnimated ? `growBar 0.8s ease-out ${index * 0.1}s both` : 'none',
-                  }}
-                  title={`${data.week}: ${data.users} users`}
-                />
-                <span className="text-xs text-neutral-500 text-center truncate w-full">{data.week}</span>
-              </div>
-            ))}
+          {/* User Growth Bar Chart */}
+          <div className="w-full flex items-end justify-between gap-3 px-4" style={{ height: '300px' }}>
+            {growthData.map((data, index) => {
+              const barHeight = (data.userCount / maxUserCount) * 100;
+              return (
+                <div key={index} className="flex-1 flex flex-col-reverse items-center group h-full">
+                  <span className="text-xs text-neutral-500 text-center truncate w-full mt-3">{data.week}</span>
+                  <div
+                    className="w-full bg-gradient-to-t from-yellow-500 to-orange-500 rounded-t-lg hover:opacity-80 cursor-pointer transition-all duration-1000 ease-out relative"
+                    style={{
+                      height: chartAnimated ? `${barHeight}%` : '0%',
+                      minHeight: chartAnimated ? '4px' : '0px',
+                    }}
+                  >
+                    {/* Hover Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-neutral-800 border border-neutral-700 rounded text-xs text-neutral-200 whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                      {data.userCount.toLocaleString()} users
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Chart Legend */}
@@ -306,11 +310,6 @@ export default function SaaSDashboard() {
         </div>
 
         <style>{`
-          @keyframes growBar {
-            from { height: 0; opacity: 0; }
-            to { height: var(--bar-height, 100%); opacity: 1; }
-          }
-          .animate-grow { animation: growBar 0.8s ease-out; }
           .animate-slide-in {
             animation: slideIn 0.3s ease-out;
           }
