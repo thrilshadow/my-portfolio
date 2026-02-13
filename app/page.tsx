@@ -18,11 +18,7 @@ export default function Home() {
             Start a Project
           </button>
         </div>
-      </div>
-    </main>
-  );
-
-<section className="max-w-3xl mx-auto py-20 px-4">
+        <section className="max-w-3xl mx-auto py-20 px-4">
   <div className="text-center mb-12">
     <h2 className="text-4xl font-black mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
       Let's Work Together
@@ -67,3 +63,7 @@ export default function Home() {
   </div>
 </section>
 
+      </div>
+    </main>
+  );
+}
